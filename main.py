@@ -13,7 +13,9 @@ from src import NeuralNet
 def simple_trainingl(x, y):
     # Trains the Neural Network with fixed hyperparameters
 
+    # The Neural Net is initialized with fixed hyperparameters
     nn = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
+    # Training
     nn.fit(x, y)
     pass
 
@@ -22,9 +24,13 @@ def simple_pipeline_training(x, y):
     # The pipeline is composed by scaling features and NN training
     # The hyperparameters are fixed values
 
+    # The Neural Net is initialized with fixed hyperparameters
     nn = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
+    # The pipeline instatiated, it wraps scaling and training phase
     pipeline = Pipeline([('scale', StandardScaler()), ('nn', nn)])
+    # Pipeline execution
     pipeline.fit(x, y)
+
     pass
 
 def simple_pipeline_training_with_callbacks(x, y):
@@ -32,12 +38,17 @@ def simple_pipeline_training_with_callbacks(x, y):
     # The pipeline is composed by scaling features and NN training
     # A callback is added in order to calculate the "balanced accuracy" and "accuracy" in the training phase
 
+    # The EpochScoring from callbacks is initialized
     balanced_accuracy = EpochScoring(scoring='balanced_accuracy', lower_is_better=False)
     accuracy = EpochScoring(scoring='accuracy', lower_is_better=False)
 
+    # The Neural Net is initialized with fixed hyperparameters
     nn = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop, callbacks=[balanced_accuracy, accuracy])
+    # The pipeline instatiated, it wraps scaling and training phase
     pipeline = Pipeline([('scale', StandardScaler()), ('nn', nn)])
+    # Pipeline execution
     pipeline.fit(x, y)
+
     pass
 
 def grid_search_pipeline_training(x, y):
@@ -47,7 +58,7 @@ def grid_search_pipeline_training(x, y):
 
     # The Neural Net is instantiated, none hyperparameter is provided
     nn = NeuralNetClassifier(NeuralNet, verbose=0, train_split=False)
-    # The pipeline is instantiated, it wraps the scaler and the neural net
+    # The pipeline is instantiated, it wraps scaling and training phase
     pipeline = Pipeline([('scale', StandardScaler()), ('nn', nn)])
 
     # The parameters for the grid search are defined
@@ -64,7 +75,7 @@ def grid_search_pipeline_training(x, y):
     gs = GridSearchCV(pipeline, params, refit=False, cv=3, scoring='balanced_accuracy', verbose=1)
     # Initialize grid search
     gs.fit(x, y)
-    
+
     pass
 
 if __name__ == "__main__":
