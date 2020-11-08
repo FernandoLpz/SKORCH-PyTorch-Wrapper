@@ -11,64 +11,64 @@ from src import load_data
 from src import NeuralNet
 
 def simple_trainingl(x, y):
-    net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
-    net.fit(x, y)
+    # Trains the Neural Network with fixed hyperparameters
+
+    nn = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
+    nn.fit(x, y)
     pass
 
 def simple_pipeline_training(x, y):
-    net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
-    pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
-    pipe.fit(x, y)
+    # Trains the Neural Network within a scikit-learn pipeline
+    # The pipeline is composed by scaling features and NN training
+    # The hyperparameters are fixed values
+
+    nn = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
+    pipeline = Pipeline([('scale', StandardScaler()), ('nn', nn)])
+    pipeline.fit(x, y)
     pass
 
 def simple_pipeline_training_with_callbacks(x, y):
+    # Trains the Neural Network within a scikit-learn pipeline
+    # The pipeline is composed by scaling features and NN training
+    # A callback is added in order to calculate the "balanced accuracy" and "accuracy" in the training phase
+
     balanced_accuracy = EpochScoring(scoring='balanced_accuracy', lower_is_better=False)
     accuracy = EpochScoring(scoring='accuracy', lower_is_better=False)
 
-    net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop, callbacks=[balanced_accuracy, accuracy])
-    pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
-    pipe.fit(x, y)
+    nn = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop, callbacks=[balanced_accuracy, accuracy])
+    pipeline = Pipeline([('scale', StandardScaler()), ('nn', nn)])
+    pipeline.fit(x, y)
     pass
 
 def grid_search_pipeline_training(x, y):
+    # Through a grid search, the optimal hyperparameters are found
+    # A pipeline is used in order to scale and train the neural net
+    # The grid search module from scikit-learn wraps the pipeline
+
+    # The Neural Net is instantiated, none hyperparameter is provided
+    nn = NeuralNetClassifier(NeuralNet, verbose=0, train_split=False)
+    # The pipeline is instantiated, it wraps the scaler and the neural net
+    pipeline = Pipeline([('scale', StandardScaler()), ('nn', nn)])
+
+    # The parameters for the grid search are defined
+    # It must be used the prefix "nn__" when setting hyperparamters for the training phase
+    # It must be used the prefix "nn__module__" when setting hyperparameters for the Neural Net
     params = {
-        'net__lr': [0.1, 0.01],
-        'net__module__num_units': [5, 10],
-        'net__module__dropout': [0.1, 0.5],
-        'net__optimizer': [optim.Adam, optim.SGD, optim.RMSprop]}
+        'nn__max_epochs':[10, 20],
+        'nn__lr': [0.1, 0.01],
+        'nn__module__num_units': [5, 10],
+        'nn__module__dropout': [0.1, 0.5],
+        'nn__optimizer': [optim.Adam, optim.SGD, optim.RMSprop]}
 
-    net = NeuralNetClassifier(ClassifierModule, max_epochs=20, lr=0.1, verbose=0, train_split=False)
-    pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
-
-    gs = GridSearchCV(pipe, params, refit=False, cv=3, scoring='balanced_accuracy', verbose=2)
+    # The grid search module is instantiated
+    gs = GridSearchCV(pipeline, params, refit=False, cv=3, scoring='balanced_accuracy', verbose=1)
+    # Initialize grid search
     gs.fit(x, y)
+    
     pass
 
 if __name__ == "__main__":
     
     x, y = load_data()
 
-    # PIPELINE
-    balanced_accuracy = EpochScoring(scoring='balanced_accuracy', lower_is_better=False)
-    accuracy = EpochScoring(scoring='accuracy', lower_is_better=False)
-    net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.Adam, callbacks=[balanced_accuracy, accuracy])
-    # net.fit(x, y)
-    pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
-    pipe.fit(x, y)
-
-    print(', '.join(net.prefixes_))
-
-
-
-    # GRID SEARCH & PIPELINE
-    # params = {
-    #     'net__lr': [0.1, 0.01],
-    #     'net__module__num_units': [5, 10],
-    #     'net__module__dropout': [0.1, 0.5],
-    #     'net__optimizer': [optim.Adam, optim.SGD, optim.RMSprop]}
-
-    # net = NeuralNetClassifier(ClassifierModule, max_epochs=20, lr=0.1, verbose=0, train_split=False)
-    # pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
-
-    # gs = GridSearchCV(pipe, params, refit=False, cv=3, scoring='balanced_accuracy', verbose=2)
-    # gs.fit(x, y)
+    grid_search_pipeline_training(x, y)
