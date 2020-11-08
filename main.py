@@ -10,18 +10,18 @@ from skorch import NeuralNetClassifier
 from src import load_data
 from src import NeuralNet
 
-def run_simple_model(x, y):
+def simple_trainingl(x, y):
     net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
     net.fit(x, y)
     pass
 
-def run_pipeline_model(x, y):
+def simple_pipeline_training(x, y):
     net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.RMSprop)
     pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
     pipe.fit(x, y)
     pass
 
-def run_pipeline_with_callbacks(x, y):
+def simple_pipeline_training_with_callbacks(x, y):
     balanced_accuracy = EpochScoring(scoring='balanced_accuracy', lower_is_better=False)
     accuracy = EpochScoring(scoring='accuracy', lower_is_better=False)
 
@@ -30,7 +30,7 @@ def run_pipeline_with_callbacks(x, y):
     pipe.fit(x, y)
     pass
 
-def run_pipeline_with_grid_search(x, y):
+def grid_search_pipeline_training(x, y):
     params = {
         'net__lr': [0.1, 0.01],
         'net__module__num_units': [5, 10],
@@ -51,10 +51,12 @@ if __name__ == "__main__":
     # PIPELINE
     balanced_accuracy = EpochScoring(scoring='balanced_accuracy', lower_is_better=False)
     accuracy = EpochScoring(scoring='accuracy', lower_is_better=False)
-    net = NeuralNetClassifier(ClassifierModule, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.Adam, callbacks=[balanced_accuracy, accuracy])
+    net = NeuralNetClassifier(NeuralNet, max_epochs=10, lr=0.01, batch_size=12, optimizer=optim.Adam, callbacks=[balanced_accuracy, accuracy])
     # net.fit(x, y)
     pipe = Pipeline([('scale', StandardScaler()), ('net', net)])
     pipe.fit(x, y)
+
+    print(', '.join(net.prefixes_))
 
 
 
