@@ -13,6 +13,7 @@ def load_data():
     # Original class labels are [1, 2, 3], the ones must be changed as [0, 1, 2]
     data['class'] = data['class'].replace([1, 2, 3],[0, 1, 2])
 
+
     # Split x and y vectors
     x = data[[feature for feature in data.columns if feature != 'class']].values
     y = np.squeeze(data[['class']].values)
